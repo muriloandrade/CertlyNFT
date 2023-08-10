@@ -12,9 +12,14 @@ interface ICertly_Client {
     function nftClaimed(bytes32 _hash ,address _toAccount) external;
 }
 
+interface ICertly_Holder {
+
+}
+
 contract Certly_Master is Ownable {
     uint256 public mintPrice = 10;
     ICertly_ClientFactory private clientFactory;
+    ICertly_Holder private holder;
 
     struct Client {
         bool allowed;
@@ -48,8 +53,9 @@ contract Certly_Master is Ownable {
         _;
     }
 
-    constructor(address _clientFactoryAddress) {
-      clientFactory = ICertly_ClientFactory(_clientFactoryAddress);
+    constructor(address _clientFactoryAddr, address _holderAddr) {
+      clientFactory = ICertly_ClientFactory(_clientFactoryAddr);
+      holder = ICertly_Holder(_holderAddr);
     }
 
     receive() external payable onlyClientOrMaster {}
