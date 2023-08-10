@@ -1,0 +1,13 @@
+{
+  "name": "certly-nft-project-truffle",
+  "version": "0.1.0",
+  "description": "CertlyNFT is a project intended to tackle counterfeit goods",
+  "scripts": {
+    "test": "truffle test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3",
+    "@truffle/hdwallet-provider": "^2.1.7",
+    "truffle-contract-size": "^2.0.1"
+  }
+}
