@@ -13,7 +13,7 @@ interface ICertly_Client {
 }
 
 interface ICertly_Holder {
-
+    function registerClient(address _clientAddr) external;
 }
 
 contract Certly_Master is Ownable {
@@ -29,7 +29,7 @@ contract Certly_Master is Ownable {
 
     mapping(address => Client) clients;
     mapping(bytes32 => address) pendingNfts;
-    mapping(address => bool) public activeContracts;
+    mapping(address => bool) activeContracts;
 
     string[] uris = ["0"];
 
@@ -40,16 +40,10 @@ contract Certly_Master is Ownable {
         uint timestamp
     );
     event MintPriceUpdated(uint previousPrice, uint newPrice, uint timestamp);
-    event NftClaimed(address client, address receiver);
     event PendingNftRegistered(bytes32 hash, address client);
 
-    modifier onlyClientOrMaster {
-        require(activeContracts[msg.sender] || msg.sender == address(this), "Only from client's or master");
-        _;
-    }
-
-    modifier onlyClient {
-        require(activeContracts[msg.sender], "Only from client's");
+     modifier onlyClient {
+        require(activeContracts[msg.sender], "Only from client's contracts");
         _;
     }
 
@@ -58,8 +52,8 @@ contract Certly_Master is Ownable {
       holder = ICertly_Holder(_holderAddr);
     }
 
-    receive() external payable onlyClientOrMaster {}
-
+    receive() external payable onlyClient {}
+    
     function withdraw(address payable _to, uint _value) external onlyOwner {
         require(
             address(this).balance >= _value,
@@ -72,7 +66,7 @@ contract Certly_Master is Ownable {
         return address(this).balance;
     }
 
-    function getActiveContracts(address _addr) external view returns (bool) {
+    function getActiveContract(address _addr) external view returns (bool) {
         return activeContracts[_addr];
     }
 
@@ -100,6 +94,7 @@ contract Certly_Master is Ownable {
             block.timestamp
         );
         uris.push(_uri);
+        holder.registerClient(newClientAddr);
         client.contractsCount++;
     }
 

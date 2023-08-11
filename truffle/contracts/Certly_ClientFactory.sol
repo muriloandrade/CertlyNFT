@@ -8,9 +8,11 @@ contract Certly_ClientFactory {
     
     address owner;
     address payable master;
+    address holder;
 
-    constructor() {
+    constructor(address _holder) {
         owner = msg.sender;
+        holder = _holder;
     }
 
     function createNewClient(string memory _uri, address _owner)
@@ -18,12 +20,12 @@ contract Certly_ClientFactory {
         returns (address)
     {
         require(msg.sender == master, "Only master");
-        Certly_Client newClient = new Certly_Client(_uri, master, _owner);
+        Certly_Client newClient = new Certly_Client(master, holder, _uri, _owner);
         return address(newClient);
     }
 
     function setMaster(address payable _master) external {
-        require(msg.sender == owner, "Only owner");
+        require(msg.sender == owner, "Not allowed");
         master = _master;
     }
 }

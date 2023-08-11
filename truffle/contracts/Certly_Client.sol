@@ -11,8 +11,13 @@ interface ICertly_Master {
     function updateUri(string memory _prevUri, string memory _uri) external;
 }
 
+interface ICertly_Holder {
+    function registerPendingNft(bytes32 _hash, uint _nftId) external;
+}
+
 contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     ICertly_Master master;
+    ICertly_Holder holder;
     address masterAddr;
     uint accountBalance;
 
@@ -37,8 +42,9 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     event Withdrawn(address indexed to, uint value);
     event UriChanged(string from, string to);
 
-    constructor(string memory _uri, address _masterAddr, address _client) ERC1155(_uri) {
+    constructor(address _masterAddr, address _holderAddr, string memory _uri, address _client) ERC1155(_uri) {
         master = ICertly_Master(_masterAddr);
+        holder = ICertly_Holder(_holderAddr);
         masterAddr = _masterAddr;
         _transferOwnership(_client);
     }
@@ -95,7 +101,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         _mintBatch(owner(), ids, amounts, "");
     }
 
-    function tokenToNft(address _toAccount, uint _tokenId, uint _nftId) public {
+    function tokenToNft(address _toAccount, uint _tokenId, uint _nftId) private {
         require(_tokenId <= MAX_TOKEN_ID, "Token ID out of range" );
         require(_nftId >= MIN_NFT_ID, "NFT ID out of range");
         require(
@@ -118,21 +124,16 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
     function tokenToNftPending(uint _invoiceHash, uint _password, uint _tokenId, uint _nftId) external onlyOwner {
         bytes32 hash = keccak256(abi.encodePacked(_invoiceHash, _password));
-        tokenToNft(address(this), _tokenId, _nftId);
+        tokenToNft(address(holder), _tokenId, _nftId);
         pendingNfts[hash] = _nftId;
+        holder.registerPendingNft(hash, _nftId);
     }
 
-    function claimNft(uint _invoiceHash, uint _password) external {
-        bytes32 hash = keccak256(abi.encodePacked(_invoiceHash, _password));
-        require(pendingNfts[hash] != 0, "NFT not found");
-        this.nftClaimed(hash, msg.sender);
-    }
-
-    function nftClaimed(bytes32 _hash ,address _toAccount) external {
-        require(msg.sender == address(this), "Not allowed");
-        uint nftId = pendingNfts[_hash];
-        pendingNfts[_hash] = 0;
-        safeTransferFrom(msg.sender, _toAccount, nftId, 1, "");
+    function requestNfts(address _to, uint[] memory _ids) external {
+        require(msg.sender == address(holder), "Not allowed");
+        uint[] memory amounts = new uint[](_ids.length);
+        for(uint i = 0; i < amounts.length; i++) amounts[i] = 1;
+        safeBatchTransferFrom(msg.sender, _to, _ids, amounts, "");
     }
 
     function revertNft(uint _nftId) external {
@@ -151,7 +152,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function payTip(uint _value) internal {
+    function payTip(uint _value) public {
         payable(masterAddr).transfer(_value);
     }
 
