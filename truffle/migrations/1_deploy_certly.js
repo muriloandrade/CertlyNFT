@@ -2,8 +2,10 @@ const Certly_Holder = artifacts.require("Certly_Holder");
 const Certly_ClientFactory = artifacts.require("Certly_ClientFactory");
 const Certly_Master = artifacts.require("Certly_Master");
 
+
 module.exports = async function (deployer) {
-  await deployer.deploy(Certly_Holder, "0x97015cD4C3d456997DD1C40e2a18c79108FCc412");
+  require('dotenv').config();
+  await deployer.deploy(Certly_Holder, process.env.GELATO_RELAY_1BALANCE_ERC2771);
   await deployer.deploy(Certly_ClientFactory, Certly_Holder.address);
   await deployer.deploy(Certly_Master, Certly_ClientFactory.address, Certly_Holder.address);
   const holder = await Certly_Holder.deployed();
