@@ -40,10 +40,11 @@ contract Certly_Master is Ownable {
         uint timestamp
     );
     event MintPriceUpdated(uint previousPrice, uint newPrice, uint timestamp);
-    event PendingNftRegistered(bytes32 hash, address client);
+    event UriUpdated(string _prevUri, string _newUri, uint timestamp);
 
-     modifier onlyClient {
-        require(activeContracts[msg.sender], "Only from client's contracts");
+     modifier onlyAllowed {
+        // require(activeContracts[msg.sender] || msg.sender == owner(), "Mst: Not allowed");
+        require(activeContracts[msg.sender], "Mst: Not allowed");
         _;
     }
 
@@ -52,18 +53,14 @@ contract Certly_Master is Ownable {
       holder = ICertly_Holder(_holderAddr);
     }
 
-    receive() external payable onlyClient {}
+    receive() external payable onlyAllowed {}
     
     function withdraw(address payable _to, uint _value) external onlyOwner {
         require(
             address(this).balance >= _value,
-            "The value requested exceeds the balance"
+            "Mst: The value requested exceeds the balance"
         );
         _to.transfer(_value);
-    }
-
-    function getBalance() external view onlyOwner returns (uint) {
-        return address(this).balance;
     }
 
     function getActiveContract(address _addr) external view returns (bool) {
@@ -87,35 +84,36 @@ contract Certly_Master is Ownable {
         Client storage client = clients[msg.sender];
         client.contracts[client.contractsCount] = newClientAddr;
         activeContracts[newClientAddr] = true;
+        uris.push(_uri);
+        holder.registerClient(newClientAddr);
         emit ClientContractCreated(
             msg.sender,
             newClientAddr,
             client.contractsCount,
             block.timestamp
         );
-        uris.push(_uri);
-        holder.registerClient(newClientAddr);
         client.contractsCount++;
     }
 
     function validateUri(string calldata _uri) private view returns(bool) {
-        require(uriExists(_uri) == 0, "URI already exists");
+        require(uriExists(_uri) == 0, "Mst: URI already exists");
         uint uriLen = strlen(_uri);
         require(
             uriLen > 11 && sameStrings(_uri[uriLen - 10:], "/{id}.json"),
-            "URI malformed. Must end with /{id}.json"
+            "Mst: URI malformed. Must end with /{id}.json"
         );
         return true;    
     }
 
-    function updateUri(string memory _prevUri, string calldata _uri) external onlyClient {
-        require(validateUri(_uri));        
+    function updateUri(string memory _prevUri, string calldata _newUri) external onlyAllowed {
+        require(validateUri(_newUri));        
         uint prevIndex = uriExists(_prevUri);
-        require(prevIndex > 0, "Previous URI not found");
-        uris[prevIndex] = _uri;
+        require(prevIndex > 0, "Mst: Previous URI not found");
+        uris[prevIndex] = _newUri;
+        emit UriUpdated(_prevUri, _newUri, block.timestamp);
     }
 
-    function uriExists(string memory _uri) internal view returns (uint) {
+    function uriExists(string memory _uri) private view returns (uint) {
         bool found = false;
         uint i;
         for (i = 0; i < uris.length && !found; i++) {
@@ -130,7 +128,7 @@ contract Certly_Master is Ownable {
     function sameStrings(
         string memory s1,
         string memory s2
-    ) internal pure returns (bool same) {
+    ) private pure returns (bool same) {
         same =
             keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2));
         return same;
@@ -144,6 +142,13 @@ contract Certly_Master is Ownable {
         return clients[msg.sender].contracts[_id];
     }
 
+    /**
+     * @dev Returns the length of a given string
+     *
+     * @param s The string to measure the length of
+     * @return The length of the input string
+     */
+    // Source: https://github.com/ensdomains/ens-contracts/blob/master/contracts/ethregistrar/StringUtils.sol
     function strlen(string memory s) internal pure returns (uint256) {
         uint256 len;
         uint256 i = 0;

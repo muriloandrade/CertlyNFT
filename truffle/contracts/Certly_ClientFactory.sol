@@ -19,13 +19,13 @@ contract Certly_ClientFactory {
         external
         returns (address)
     {
-        require(msg.sender == master, "Only master");
+        require(msg.sender == master, "Fct: Only master");
         Certly_Client newClient = new Certly_Client(master, holder, _uri, _owner);
         return address(newClient);
     }
 
     function setMaster(address payable _master) external {
-        require(msg.sender == owner, "Not allowed");
+        require(msg.sender == owner, "Fct: Not allowed");
         master = _master;
     }
 }
