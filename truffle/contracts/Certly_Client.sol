@@ -97,7 +97,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         }
         require(ids_range_ok, "It was passed token ID(s) out of range");
 
-        payTip(mintPrice * totalAmount);
+        payFee(mintPrice * totalAmount);
         _mintBatch(owner(), ids, amounts, "");
     }
 
@@ -152,7 +152,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function payTip(uint _value) public {
+    function payFee(uint _value) public {
         payable(masterAddr).transfer(_value);
     }
 
