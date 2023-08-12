@@ -3,12 +3,13 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import { ERC2771Context } from "@gelatonetwork/relay-context/contracts/vendor/ERC2771Context.sol";
 
 interface ICertly_Client {
     function requestNfts(address _to, uint[] memory _ids) external;
 }
 
-contract Certly_Holder is ERC1155Holder {
+contract Certly_Holder is ERC1155Holder, ERC2771Context {
     
     address owner;
     address master;
@@ -30,8 +31,10 @@ contract Certly_Holder is ERC1155Holder {
     event PendingNftRegistered(address _fromClient, uint _nftId, uint _timestamp);
     event NftsClaimed(NFT[] _nfts, uint _timestamp);
 
-    constructor() {
-        owner = msg.sender;
+    //Trusted Forwarder: GelatoRelay1BalanceERC2771.sol 
+    //Address          : 0x97015cD4C3d456997DD1C40e2a18c79108FCc412
+    constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {
+        owner = msg.sender;        
     }    
 
     function setMaster(address payable _master) external {
@@ -55,29 +58,31 @@ contract Certly_Holder is ERC1155Holder {
     }
 
     mapping(address => NFT[]) _nfts;
-    function claimNFTs(uint _invoiceHash, uint _password) external {        
+    
+    //Sponsored function
+    function claimNFTs(uint _invoiceHash, uint _password) external {
         bytes32 hash_ = keccak256(abi.encodePacked(_invoiceHash, _password));
         PendingNFTs storage hashPendingNFTs = hashesNFTs[hash_];
         require(hashPendingNFTs.validHash != false, "Invalid invoice hash or password");  
         
-        for(uint i = 0; i < hashPendingNFTs.clients.length; i++) {            
+        for(uint i = 0; i < hashPendingNFTs.clients.length; i++) {
             ICertly_Client client = ICertly_Client(hashPendingNFTs.clients[i]);
 
             uint[] memory nftIds = hashPendingNFTs.nfts[address(client)];
             for (uint j = 0; j < nftIds.length; j++) {
                 NFT memory nft;
                 nft.seller = address(client);
-                nft.owner = msg.sender;
+                nft.owner = _msgSender();
                 nft.id = nftIds[j];
-                _nfts[msg.sender].push(nft);
+                _nfts[_msgSender()].push(nft);
             }
 
-            client.requestNfts(msg.sender, nftIds);            
+            client.requestNfts(_msgSender(), nftIds);            
             delete hashPendingNFTs.nfts[address(client)];
         }        
         hashPendingNFTs.validHash = false;
         delete hashPendingNFTs.clients;
-        emit NftsClaimed(_nfts[msg.sender], block.timestamp);
-        delete _nfts[msg.sender];
+        emit NftsClaimed(_nfts[_msgSender()], block.timestamp);
+        delete _nfts[_msgSender()];
     }
 }

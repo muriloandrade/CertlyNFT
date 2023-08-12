@@ -39,8 +39,10 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         uint nftId,
         uint timestamp
     );
-    event Withdrawn(address indexed to, uint value);
-    event UriChanged(string from, string to);
+    event Withdrawn(address indexed to, uint value, uint timestamp);
+    event UriChanged(string from, string to, uint timestamp);
+    event MintedToken(uint id, uint amount, uint timestamp);
+    event MintedTokensBatch(uint[] ids, uint[] amounts, uint timestamp);
 
     constructor(address _masterAddr, address _holderAddr, string memory _uri, address _client) ERC1155(_uri) {
         master = ICertly_Master(_masterAddr);
@@ -59,7 +61,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
             "The value requested exceeds the balance"
         );
         _to.transfer(_value);
-        emit Withdrawn(_to, _value);
+        emit Withdrawn(_to, _value, block.timestamp);
     }
 
     function setURI(string memory _newUri) external onlyOwner {
@@ -75,8 +77,9 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         require(id <= MAX_TOKEN_ID, "Token id out of range");
         uint mintPrice = master.getMintPrice();
         require(address(this).balance >= amount * mintPrice, "Not enough funds");
-        payTip(mintPrice * amount);
+        payFee(mintPrice * amount);
         _mint(owner(), id, amount, "");
+        emit MintedToken(id, amount, block.timestamp);
     }
 
     function mintTokenBatch(
@@ -99,6 +102,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
         payFee(mintPrice * totalAmount);
         _mintBatch(owner(), ids, amounts, "");
+        emit MintedTokensBatch(ids, amounts, block.timestamp);
     }
 
     function tokenToNft(address _toAccount, uint _tokenId, uint _nftId) private {
@@ -122,13 +126,13 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function tokenToNftPending(uint _invoiceHash, uint _password, uint _tokenId, uint _nftId) external onlyOwner {
+    function tokenToNftPending(uint _invoiceHash, uint _password, uint _tokenId, uint _nftId) private onlyOwner {
         bytes32 hash = keccak256(abi.encodePacked(_invoiceHash, _password));
         tokenToNft(address(holder), _tokenId, _nftId);
         pendingNfts[hash] = _nftId;
         holder.registerPendingNft(hash, _nftId);
     }
-
+    
     function requestNfts(address _to, uint[] memory _ids) external {
         require(msg.sender == address(holder), "Not allowed");
         uint[] memory amounts = new uint[](_ids.length);
