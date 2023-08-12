@@ -8,11 +8,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 interface ICertly_Master {
     function getMintPrice() external view returns (uint);
-    function updateUri(string memory _prevUri, string memory _uri) external;
+    function updateUri(string memory _prevUri, string calldata _newUri) external;
+    function receiveFee() payable external;
 }
 
 interface ICertly_Holder {
-    function registerPendingNft(bytes32 _hash, uint _nftId) external;
+    function registerPendingNfts(bytes32 _hash, uint[] memory _nftsIds) external;
 }
 
 contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
@@ -30,19 +31,22 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     mapping(uint => uint) nftsPreviousTokens;
     mapping(uint => uint) nftsConversionsTimestamps;
     uint public timeToRevertNft = 1 days;
-    mapping(bytes32 => uint) pendingNfts;
 
-    event TokenConvertedToNFT(
-        address tokenOwner,
-        uint tokenId,
-        address nftOwner,
-        uint nftId,
+    event Withdrawn(address indexed to, uint value, uint timestamp);    
+    event MintedTokens(uint[] ids, uint[] amounts, uint timestamp);
+    event TokensConvertedToNFTs(
+        address tokensOwner,
+        uint[] tokensIds,
+        address nftsOwner,
+        uint[] nftsIds,
         uint timestamp
     );
-    event Withdrawn(address indexed to, uint value, uint timestamp);
-    event UriChanged(string from, string to, uint timestamp);
-    event MintedToken(uint id, uint amount, uint timestamp);
-    event MintedTokensBatch(uint[] ids, uint[] amounts, uint timestamp);
+    event FeePaid(uint amount, uint timestamp);
+
+    modifier onlyHolder {
+        require(msg.sender == address(holder), "Clt: Not allowed");
+        _;
+    }
 
     constructor(address _masterAddr, address _holderAddr, string memory _uri, address _client) ERC1155(_uri) {
         master = ICertly_Master(_masterAddr);
@@ -58,28 +62,19 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     function withdraw(address payable _to, uint _value) external onlyOwner {
         require(
             address(this).balance >= _value,
-            "The value requested exceeds the balance"
+            "Clt: The value requested exceeds the balance"
         );
         _to.transfer(_value);
         emit Withdrawn(_to, _value, block.timestamp);
     }
 
-    function setURI(string memory _newUri) external onlyOwner {
+    function updateUri(string memory _newUri) external onlyOwner {
         master.updateUri(uri(0), _newUri);
         _setURI(_newUri);
     }
 
     function setTimeToRevertNft(uint _timeInDays) external onlyOwner {
         timeToRevertNft = _timeInDays * 1 days;
-    }
-
-    function mintToken(uint256 id, uint256 amount) external onlyOwner {
-        require(id <= MAX_TOKEN_ID, "Token id out of range");
-        uint mintPrice = master.getMintPrice();
-        require(address(this).balance >= amount * mintPrice, "Not enough funds");
-        payFee(mintPrice * amount);
-        _mint(owner(), id, amount, "");
-        emit MintedToken(id, amount, block.timestamp);
     }
 
     function mintTokenBatch(
@@ -91,61 +86,69 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         for (uint i = 0; i < amounts.length; i++) {
             totalAmount += amounts[i];
         }
-        require(
-            address(this).balance >= totalAmount * mintPrice, "Not enough funds");
+        require(address(this).balance >= totalAmount * mintPrice, "Clt: Not enough funds");
 
         bool ids_range_ok = true;
         for (uint i = 0; i < ids.length; i++) {
             ids_range_ok = ids[i] <= MAX_TOKEN_ID;
         }
-        require(ids_range_ok, "It was passed token ID(s) out of range");
+        require(ids_range_ok, "Clt: Passed Id(s) out of range");
 
-        payFee(mintPrice * totalAmount);
         _mintBatch(owner(), ids, amounts, "");
-        emit MintedTokensBatch(ids, amounts, block.timestamp);
+        payFee(mintPrice * totalAmount);
+        emit MintedTokens(ids, amounts, block.timestamp);
     }
 
-    function tokenToNft(address _toAccount, uint _tokenId, uint _nftId) private {
-        require(_tokenId <= MAX_TOKEN_ID, "Token ID out of range" );
-        require(_nftId >= MIN_NFT_ID, "NFT ID out of range");
-        require(
-            balanceOf(msg.sender, _tokenId) > 0,
-            "Insufficient token supply"
-        );
-        require(totalSupply(_nftId) == 0, "NFT already minted");
-        _mint(_toAccount, _nftId, 1, "");
-        burn(msg.sender, _tokenId, 1);
-        nftsPreviousTokens[_nftId] = _tokenId;
-        nftsConversionsTimestamps[_nftId] = block.timestamp;
-        emit TokenConvertedToNFT(
+    mapping(address => mapping(uint => bool)) nftsIdsPassed;
+    function tokensToNfts(address _toAccount, uint[] memory _tokensIds, uint[] memory _nftsIds) private {
+        bool tokensIdsOk = true;
+        bool nftsIdsOk = true;
+        for (uint i = 0; i < _tokensIds.length && tokensIdsOk && nftsIdsOk; i++) {
+            tokensIdsOk = _tokensIds[i] <= MAX_TOKEN_ID;
+            nftsIdsOk =  _nftsIds[i] >= MIN_NFT_ID
+                        && !(nftsIdsPassed[_toAccount][_nftsIds[i]])
+                        && totalSupply(_nftsIds[i]) == 0;
+            nftsIdsPassed[_toAccount][_nftsIds[i]] = true;
+        }
+        for (uint i; i < _nftsIds.length; i++) nftsIdsPassed[msg.sender][i] = false;
+        require(tokensIdsOk && nftsIdsOk, "Clt: Passed Id(s) out of range, non unique or already minted NFT Id" );
+       
+        uint[] memory _1s = new uint[](_nftsIds.length);
+        for(uint i = 0; i < _tokensIds.length; i++) _1s[i] = 1;
+        burnBatch(msg.sender, _tokensIds, _1s);
+        _mintBatch(_toAccount, _nftsIds, _1s, "");
+
+        for (uint i = 0; i < _nftsIds.length; i++) {
+            nftsPreviousTokens[_nftsIds[i]] = _tokensIds[i];
+            nftsConversionsTimestamps[_nftsIds[i]] = block.timestamp;
+        }
+        emit TokensConvertedToNFTs(
             msg.sender,
-            _tokenId,
+            _tokensIds,
             _toAccount,
-            _nftId,
+            _nftsIds,
             block.timestamp
         );
     }
 
-    function tokenToNftPending(uint _invoiceHash, uint _password, uint _tokenId, uint _nftId) private onlyOwner {
+    function tokensToNftsPending(uint _invoiceHash, uint _password, uint[] memory _tokensIds, uint[] memory _nftsIds) external onlyOwner {
         bytes32 hash = keccak256(abi.encodePacked(_invoiceHash, _password));
-        tokenToNft(address(holder), _tokenId, _nftId);
-        pendingNfts[hash] = _nftId;
-        holder.registerPendingNft(hash, _nftId);
+        tokensToNfts(address(holder), _tokensIds, _nftsIds);
+        holder.registerPendingNfts(hash, _nftsIds);
     }
     
-    function requestNfts(address _to, uint[] memory _ids) external {
-        require(msg.sender == address(holder), "Not allowed");
-        uint[] memory amounts = new uint[](_ids.length);
-        for(uint i = 0; i < amounts.length; i++) amounts[i] = 1;
-        safeBatchTransferFrom(msg.sender, _to, _ids, amounts, "");
+    function requestNfts(address _to, uint[] memory _ids) external onlyHolder {        
+        uint[] memory _1s = new uint[](_ids.length);
+        for(uint i = 0; i < _ids.length; i++) _1s[i] = 1;
+        safeBatchTransferFrom(msg.sender, _to, _ids, _1s, "");
     }
 
     function revertNft(uint _nftId) external {
-        require(balanceOf(msg.sender, _nftId) > 0, "Caller is not NFT owner");
+        require(balanceOf(msg.sender, _nftId) > 0, "Clt: Caller is not NFT owner");
         require(
             block.timestamp <=
                 nftsConversionsTimestamps[_nftId] + timeToRevertNft,
-            "Elapsed time to revert"
+            "Clt: Elapsed time to revert"
         );
         burn(msg.sender, _nftId, 1);
         _mint(
@@ -156,8 +159,9 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function payFee(uint _value) public {
-        payable(masterAddr).transfer(_value);
+    function payFee(uint _value) private {
+        master.receiveFee{value: _value}();
+        emit FeePaid(_value, block.timestamp);
     }
 
     // The following functions are overrides required by Solidity.
