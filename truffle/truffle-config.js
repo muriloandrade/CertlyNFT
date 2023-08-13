@@ -43,7 +43,7 @@
 
 require('dotenv').config();
 // const { MNEMONIC, PROJECT_ID } = process.env;
-const { MNEMONIC } = process.env;
+const { MNEMONIC, LINEA_ETHERSCAN_API_KEY } = process.env;
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
 
@@ -78,8 +78,13 @@ module.exports = {
           `https://rpc.goerli.linea.build/`,
         );
       },
+      verify: {
+        apiUrl: "https://goerli.lineascan.build/apis#contracts",
+        apiKey: LINEA_ETHERSCAN_API_KEY,
+        explorerUrl: "https://goerli.lineascan.build/",
+      },
       network_id: "59140",
-    },
+    },  
     //
     // An additional network, but with some advanced options…
     // advanced: {
@@ -151,7 +156,8 @@ module.exports = {
   // }
   
   plugins: [
-    'truffle-contract-size'
+    'truffle-contract-size',
+    'truffle-plugin-verify'
   ]
 };
   
