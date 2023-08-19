@@ -4,7 +4,7 @@ import App from "./App";
 import { ThirdwebProvider } from "@thirdweb-dev/react";
 import { ThemeProvider, createTheme } from '@mui/material';
 import { LineaTestnet } from "@thirdweb-dev/chains";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 
 import CssBaseline from '@mui/material/CssBaseline';
 
@@ -29,7 +29,7 @@ const container = document.getElementById("root");
 const root = createRoot(container!);
 
 root.render(
-  // <React.StrictMode>
+  <React.StrictMode>
     <ThemeProvider theme={darkTheme}>      
       <CssBaseline />      
       <Toaster
@@ -43,5 +43,5 @@ root.render(
         <App />
       </ThirdwebProvider>
     </ThemeProvider>
-  // {/* </React.StrictMode> */}
+  // </React.StrictMode>
 );

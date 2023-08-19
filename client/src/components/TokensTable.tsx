@@ -1,22 +1,13 @@
-import * as React from 'react';
-import { Fragment } from 'react';
+import { TextField } from '@mui/material';
+import Paper from '@mui/material/Paper';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
-import { Button, Checkbox, Link, Stack, TextField, Typography } from '@mui/material';
+import { Fragment } from 'react';
 
-export enum Type {
-  TOKEN,
-  NFT
-}
-
-interface TokensTableProps {
-  type: Type;
-}
 
 function createData(
   id: number,
@@ -31,7 +22,7 @@ const rows = [
   createData(2, 20),
 ];
 
-export default function TokensTable(props: TokensTableProps) {
+export default function TokensTable() {
 
   return (
     <TableContainer component={Paper} sx={{ width: '50%' }}>

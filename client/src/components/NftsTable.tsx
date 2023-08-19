@@ -9,12 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { Button, Checkbox, Link, Stack, TextField, Typography } from '@mui/material';
 import NFT from './NFT';
-
-export enum Type {
-  TOKEN,
-  NFT
-}
-
+import { NftType } from '../pages/FinalConsumer'
 
 function createData(
   id: number,
@@ -29,7 +24,13 @@ const rows = [
   createData(2, 20),
 ];
 
-export default function NftsTable() {
+interface NftsTableProps {
+  nfts: NftType[] | undefined;
+}
+
+export default function NftsTable(props: NftsTableProps) {
+
+  const { nfts } = props;
 
 
 

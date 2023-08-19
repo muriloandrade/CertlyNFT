@@ -18,10 +18,10 @@ export default function ContractsTable() {
   const address = useAddress();
   const masterAddr: string = import.meta.env.VITE_MASTER_ADDR;
   const { contract } = useContract(masterAddr);
+  const { data: createdEv, isLoading } = useContractEvents(contract, "ClientContractCreated");
 
 
   const [rows, setRows] = useState<Row[]>();
-  const { data: createdEv, isLoading } = useContractEvents(contract, "ClientContractCreated");
   const [values, setValues] = useState<String[]>(new Array<String>(30).fill(''));
   const [sendings, setSendings] = useState<Boolean[]>(new Array<Boolean>(30).fill(false));
 
@@ -36,7 +36,7 @@ export default function ContractsTable() {
   }, [rows]);
 
 
-  const updateBalance = useCallback(() => {
+  const updateBalance: any = useCallback(() => {
     let _promises: Promise<BigNumber>[] = [];
     let _rows: Row[] = [];
 

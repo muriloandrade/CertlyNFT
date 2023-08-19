@@ -1,12 +1,11 @@
-import * as React from 'react';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import * as React from 'react';
 
+import FinalConsumer from '../pages/FinalConsumer';
 import Manufacturer from '../pages/Manufacturer';
 import Retailer from '../pages/Retailer';
-import FinalConsumer from '../pages/FinalConsumer';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -42,7 +41,7 @@ function a11yProps(index: number) {
 }
 
 export default function BasicTabs() {
-  const [value, setValue] = React.useState(1);
+  const [value, setValue] = React.useState(2);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);

@@ -24,7 +24,6 @@ export default function Retailer() {
 
   const sdk = useSDK();
   const connected = sdk?.wallet.isConnected();
-  const web3 = new Web3();
 
   function handleContractChange(e: ChangeEvent, index: number) {
     var result = rows.map((r, i) => {
@@ -53,7 +52,7 @@ export default function Retailer() {
   function handlePasswordChange(e: ChangeEvent) {
 
     if ((e.target as HTMLInputElement).value) {
-      const pwdHash = web3.utils.soliditySha3({ type: "string", value: (e.target as HTMLInputElement).value })
+      const pwdHash = Web3.utils.soliditySha3({ type: "string", value: (e.target as HTMLInputElement).value })
       setPasswordHash(pwdHash);
     } else {
       setPasswordHash('');
@@ -77,7 +76,7 @@ export default function Retailer() {
 
     // console.log("invoice hash", invoiceHash);
     // console.log("password hash", passwordHash);
-    const hash = web3.utils.soliditySha3({ type: "bytes", value: invoiceHash }, { type: "bytes", value: passwordHash });
+    const hash = Web3.utils.soliditySha3({ type: "bytes", value: invoiceHash }, { type: "bytes", value: passwordHash });
 
     try {
       setIsCalling(true);
@@ -148,9 +147,8 @@ export default function Retailer() {
             sx={{ width: "15ch", minHeight: "45px", maxHeight: "45px" }}>
             {!connected ? "Disconnected" : isCalling ? <CircularProgress size="1rem" color="inherit" /> : "Send NFT"}
           </Button>
-
-
         </Stack>
+        
       </Grid>
 
     </Grid>

@@ -1,20 +1,9 @@
-import "./styles/Home.css";
 import {
-  Container,
-  Grid,
-  Box,
-  Toolbar,
-  IconButton,
-  Typography,
-  TextField,
-  InputAdornment,
-  FormControl,
-  InputLabel,
-  OutlinedInput,
-  Button
+  Container
 } from '@mui/material';
-import BasicTabs from "./components/Tabs";
 import CertlyAppBar from "./components/CertlyAppBar";
+import BasicTabs from "./components/Tabs";
+import "./styles/Home.css";
 
 
 export default function Home() {

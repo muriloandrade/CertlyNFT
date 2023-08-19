@@ -18,7 +18,6 @@ export default function FileUploader(props: FileUpoloaderProps) {
     const target = event.target as HTMLInputElement;
     const files = target.files as FileList;
     const reader = new FileReader();
-    const web3 = new Web3();
 
     if (target && files && files.length > 0) {
 
@@ -26,7 +25,7 @@ export default function FileUploader(props: FileUpoloaderProps) {
       reader.readAsText(files[0]);
 
       reader.onloadend = function () {
-        const invoiceHash = web3.utils.soliditySha3({ type: "string", value: reader.result as string });
+        const invoiceHash = Web3.utils.soliditySha3({ type: "string", value: reader.result as string });
         setInvoiceHash(invoiceHash);
       }
     }
