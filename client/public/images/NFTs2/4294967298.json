@@ -1,0 +1,18 @@
+{
+  "title": "CertlyNFT unique token",
+  "type": "object",
+  "properties": {
+      "name": {
+          "type": "string",
+          "description": "Identifies the asset to which this NFT represents"
+      },
+      "description": {
+          "type": "string",
+          "description": "Describes the asset to which this NFT represents"
+      },
+      "image": {
+          "type": "string",
+          "description": "https://cdn.pixabay.com/photo/2014/02/03/16/51/football-257489_640.png"
+      }
+  }
+}

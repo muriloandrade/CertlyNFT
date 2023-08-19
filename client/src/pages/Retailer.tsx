@@ -97,60 +97,63 @@ export default function Retailer() {
 
   return (
 
-    <Grid container direction="column" justifyContent="center" alignItems="center"
-      component={Paper} p={3} spacing={4} width="100%">
+    <Box sx={{ width: '100%' }}>
 
-      <Grid item>
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell align="left" sx={{ width: "60ch", borderBottom: 0, pl: 0, pt: 0 }}>Contract</TableCell>
-                <TableCell align="left" sx={{ width: "20ch", borderBottom: 0, pl: 0, pt: 0 }}>Token ID</TableCell>
-                <TableCell align="center" sx={{ width: "10ch", borderBottom: 0, pt: 0 }}>Amount</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
+      <Grid container direction="column" justifyContent="center" alignItems="center"
+        component={Paper} p={3} spacing={4} width="100%">
 
-              {rows.map((row: Row, index: number) => {
-                return (
-                  <TableRow key={index}>
-                    <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
-                      <TextField value={row.contract} sx={{ width: "100%" }} onChange={(e) => handleContractChange(e, index)} /></TableCell>
-                    <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
-                      <TextField value={row.tokenId} sx={{ width: "100%" }} onChange={(e) => handleTokenIdChange(e, index)} /></TableCell>
-                    <TableCell align="center" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
-                      <TextField value={row.amount} onChange={(e) => handleAmountChange(e, index)} /></TableCell>
-                  </TableRow>
-                )
-              })}
+        <Grid item>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="left" sx={{ width: "60ch", borderBottom: 0, pl: 0, pt: 0 }}>Contract</TableCell>
+                  <TableCell align="left" sx={{ width: "20ch", borderBottom: 0, pl: 0, pt: 0 }}>Token ID</TableCell>
+                  <TableCell align="center" sx={{ width: "10ch", borderBottom: 0, pt: 0 }}>Amount</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
 
-            </TableBody>
-          </Table>
-        </TableContainer>
+                {rows.map((row: Row, index: number) => {
+                  return (
+                    <TableRow key={index}>
+                      <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
+                        <TextField value={row.contract} sx={{ width: "100%" }} onChange={(e) => handleContractChange(e, index)} /></TableCell>
+                      <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
+                        <TextField value={row.tokenId} sx={{ width: "100%" }} onChange={(e) => handleTokenIdChange(e, index)} /></TableCell>
+                      <TableCell align="center" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
+                        <TextField value={row.amount} onChange={(e) => handleAmountChange(e, index)} /></TableCell>
+                    </TableRow>
+                  )
+                })}
+
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Grid>
+
+        <Grid item>
+          <Stack
+            direction="row"
+            justifyContent="center"
+            alignItems="center"
+            spacing={2}>
+            <FileUploader setInvoiceHash={setInvoiceHash} />
+            <TextField label="Password" onChange={(event) => handlePasswordChange(event)} size="small" type="password" sx={{ width: '15ch' }} />
+
+            <Button
+              onClick={() => call()}
+              disabled={!connected || isCalling || !invoiceHash || !passwordHash}
+              variant="contained"
+              color="primary"
+              sx={{ width: "15ch", minHeight: "45px", maxHeight: "45px" }}>
+              {!connected ? "Disconnected" : isCalling ? <CircularProgress size="1rem" color="inherit" /> : "Send NFT"}
+            </Button>
+          </Stack>
+
+        </Grid>
+
       </Grid>
-
-      <Grid item>
-        <Stack
-          direction="row"
-          justifyContent="center"
-          alignItems="center"
-          spacing={2}>
-          <FileUploader setInvoiceHash={setInvoiceHash} />
-          <TextField label="Password" onChange={(event) => handlePasswordChange(event)} size="small" type="password" sx={{ width: '15ch' }} />
-
-          <Button
-            onClick={() => call()}
-            disabled={!connected || isCalling || !invoiceHash || !passwordHash}
-            variant="contained"
-            color="primary"
-            sx={{ width: "15ch", minHeight: "45px", maxHeight: "45px" }}>
-            {!connected ? "Disconnected" : isCalling ? <CircularProgress size="1rem" color="inherit" /> : "Send NFT"}
-          </Button>
-        </Stack>
-        
-      </Grid>
-
-    </Grid>
+    </Box>
   )
 }
