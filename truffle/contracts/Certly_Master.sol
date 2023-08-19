@@ -3,18 +3,10 @@
 pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/ICertly_ClientFactory.sol";
+import "./interfaces/ICertly_Client.sol";
+import "./interfaces/ICertly_Holder.sol";
 
-interface ICertly_ClientFactory {
-  function createNewClient(string memory _uri, address _owner) external returns(address); 
-}
-
-interface ICertly_Client {
-    function nftClaimed(bytes32 _hash ,address _toAccount) external;
-}
-
-interface ICertly_Holder {
-    function registerClient(address _clientAddr) external;
-}
 
 contract Certly_Master is Ownable {
     uint256 public mintPrice = 10;
@@ -36,6 +28,7 @@ contract Certly_Master is Ownable {
     event ClientContractCreated(
         address indexed client,
         address indexed contractAddress,
+        string uri,
         uint index,
         uint timestamp
     );
@@ -90,6 +83,7 @@ contract Certly_Master is Ownable {
         emit ClientContractCreated(
             msg.sender,
             newClientAddr,
+            _uri,
             client.contractsCount,
             block.timestamp
         );

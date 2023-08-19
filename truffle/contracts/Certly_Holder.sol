@@ -4,10 +4,8 @@ pragma solidity 0.8.19;
 
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import { ERC2771Context } from "@gelatonetwork/relay-context/contracts/vendor/ERC2771Context.sol";
+import "./interfaces/ICertly_Client.sol";
 
-interface ICertly_Client {
-    function requestNfts(address _to, uint[] memory _ids) external;
-}
 
 contract Certly_Holder is ERC1155Holder, ERC2771Context {
     

@@ -5,16 +5,9 @@ pragma solidity 0.8.19;
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Supply.sol";
 import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./interfaces/ICertly_Master.sol";
+import "./interfaces/ICertly_Holder.sol";
 
-interface ICertly_Master {
-    function getMintPrice() external view returns (uint);
-    function updateUri(string memory _prevUri, string calldata _newUri) external;
-    function receiveFee() payable external;
-}
-
-interface ICertly_Holder {
-    function registerPendingNfts(bytes32 _hash, uint[] memory _nftsIds) external;
-}
 
 contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     ICertly_Master master;
@@ -29,6 +22,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     uint public constant MIN_NFT_ID = 2 ** 32;
 
     mapping(uint => uint) nftsPreviousTokens;
+    mapping(uint => address) nftsPreviousOwners;
     mapping(uint => uint) nftsConversionsTimestamps;
     uint public timeToRevertNft = 1 days;
 
@@ -120,6 +114,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
         for (uint i = 0; i < _nftsIds.length; i++) {
             nftsPreviousTokens[_nftsIds[i]] = _tokensIds[i];
+            nftsPreviousOwners[_nftsIds[i]] = msg.sender;
             nftsConversionsTimestamps[_nftsIds[i]] = block.timestamp;
         }
         emit TokensConvertedToNFTs(
@@ -131,28 +126,30 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function tokensToNftsPending(uint _invoiceHash, uint _password, uint[] memory _tokensIds, uint[] memory _nftsIds) external onlyOwner {
-        bytes32 hash = keccak256(abi.encodePacked(_invoiceHash, _password));
+    function verifyHashUint(uint256 _hash) public pure returns(bytes32)  {
+        return keccak256(abi.encodePacked(_hash));
+    }
+
+
+
+    function tokensToNftsPending(bytes32 _invoice_and_password_hash, uint[] memory _tokensIds, uint[] memory _nftsIds) external {
+        
         tokensToNfts(address(holder), _tokensIds, _nftsIds);
-        holder.registerPendingNfts(hash, _nftsIds);
+        holder.registerPendingNfts(_invoice_and_password_hash, _nftsIds);
     }
     
-    function requestNfts(address _to, uint[] memory _ids) external onlyHolder {        
+    function requestNfts(address _to, uint[] memory _ids) external onlyHolder {
         uint[] memory _1s = new uint[](_ids.length);
         for(uint i = 0; i < _ids.length; i++) _1s[i] = 1;
         safeBatchTransferFrom(msg.sender, _to, _ids, _1s, "");
     }
 
-    function revertNft(uint _nftId) external {
-        require(balanceOf(msg.sender, _nftId) > 0, "Clt: Caller is not NFT owner");
-        require(
-            block.timestamp <=
-                nftsConversionsTimestamps[_nftId] + timeToRevertNft,
-            "Clt: Elapsed time to revert"
-        );
-        burn(msg.sender, _nftId, 1);
+    function revertNft(address _caller, uint _nftId) external onlyHolder {
+        require(balanceOf(_caller, _nftId) > 0, "Clt: Caller is not NFT owner");
+        require(block.timestamp <= nftsConversionsTimestamps[_nftId] + timeToRevertNft,"Clt: Elapsed time to revert");
+        burn(_caller, _nftId, 1);
         _mint(
-            owner(),
+            nftsPreviousOwners[_nftId],
             nftsPreviousTokens[_nftId],
             1,
             ""
