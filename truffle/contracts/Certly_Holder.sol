@@ -21,13 +21,14 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
     struct NFT {
         address seller;
         address owner;
+        string uri;
         uint id;
     }
     mapping(bytes32 => PendingNFTs) hashesNFTs;
     mapping(address => bool) allowedClientsContracts;
 
     event PendingNftsRegistered(address _fromClient, uint[] _nftsIds, uint _timestamp);
-    event NftsClaimed(NFT[] _nfts, uint _timestamp);
+    event NftsRedeemed(NFT[] _nfts, uint _timestamp);
 
     //Trusted Forwarder: GelatoRelay1BalanceERC2771.sol
     constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {
@@ -78,7 +79,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
         }        
         hashPendingNFTs.validHash = false;
         delete hashPendingNFTs.clients;
-        emit NftsClaimed(_nfts[_msgSender()], block.timestamp);
+        emit NftsRedeemed(_nfts[_msgSender()], block.timestamp);
         delete _nfts[_msgSender()];
     }
 }
