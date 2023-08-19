@@ -20,6 +20,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
     //NFT IDs: from (2^32) onward
     uint public constant MIN_NFT_ID = 2 ** 32;
+    uint nftCount = MIN_NFT_ID;
 
     mapping(uint => uint) nftsPreviousTokens;
     mapping(uint => address) nftsPreviousOwners;
@@ -99,10 +100,10 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         bool nftsIdsOk = true;
         for (uint i = 0; i < _tokensIds.length && tokensIdsOk && nftsIdsOk; i++) {
             tokensIdsOk = _tokensIds[i] <= MAX_TOKEN_ID;
-            nftsIdsOk =  _nftsIds[i] >= MIN_NFT_ID
-                        && !(nftsIdsPassed[_toAccount][_nftsIds[i]])
-                        && totalSupply(_nftsIds[i]) == 0;
-            nftsIdsPassed[_toAccount][_nftsIds[i]] = true;
+            // nftsIdsOk =  _nftsIds[i] >= MIN_NFT_ID
+            //             && !(nftsIdsPassed[_toAccount][_nftsIds[i]])
+            //             && totalSupply(_nftsIds[i]) == 0;
+            // nftsIdsPassed[_toAccount][_nftsIds[i]] = true;
         }
         for (uint i; i < _nftsIds.length; i++) nftsIdsPassed[msg.sender][i] = false;
         require(tokensIdsOk && nftsIdsOk, "Clt: Passed Id(s) out of range, non unique or already minted NFT Id" );
@@ -126,16 +127,14 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function verifyHashUint(uint256 _hash) public pure returns(bytes32)  {
-        return keccak256(abi.encodePacked(_hash));
-    }
-
-
-
-    function tokensToNftsPending(bytes32 _invoice_and_password_hash, uint[] memory _tokensIds, uint[] memory _nftsIds) external {
+    function tokensToNftsPending(bytes32 _invoice_and_password_hash, uint[] memory _tokensIds) external {
         
-        tokensToNfts(address(holder), _tokensIds, _nftsIds);
-        holder.registerPendingNfts(_invoice_and_password_hash, _nftsIds);
+        uint[] memory nftsIds;
+        for (uint i = 0; i < _tokensIds.length; i++) {
+            nftsIds[i] = nftCount++;
+        }
+        tokensToNfts(address(holder), _tokensIds, nftsIds);
+        holder.registerPendingNfts(_invoice_and_password_hash, nftsIds);
     }
     
     function requestNfts(address _to, uint[] memory _ids) external onlyHolder {

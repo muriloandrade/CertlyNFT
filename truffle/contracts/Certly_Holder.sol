@@ -56,7 +56,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
     mapping(address => NFT[]) _nfts;
     
     //Gelato's sponsored function
-    function claimNFTs(uint _invoiceHash, uint _password) external {
+    function claimNFTs(bytes32 _invoiceHash, bytes32 _password) external {
         bytes32 hash_ = keccak256(abi.encodePacked(_invoiceHash, _password));
         PendingNFTs storage hashPendingNFTs = hashesNFTs[hash_];
         require(hashPendingNFTs.validHash != false, "Hld: Invalid invoice hash or password");  

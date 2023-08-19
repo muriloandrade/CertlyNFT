@@ -1,12 +1,10 @@
-import { Box, Button, CircularProgress, FormControl, Grid, InputLabel, Paper, Select, SelectChangeEvent, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
-import MenuItem from '@mui/material/MenuItem';
+import { Button, CircularProgress, Grid, Paper, SelectChangeEvent, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
 import { SmartContract, useAddress, useContract, useContractEvents, useSDK } from '@thirdweb-dev/react';
-import { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { abi } from '../components/ClientContractAbi';
+import { ChangeEvent, useState } from 'react';
 import toast from 'react-hot-toast';
+import Web3 from 'web3';
+import { abi } from '../components/ClientContractAbi';
 import FileUploader from '../components/FileUploader';
-import Web3, { Sha3Input } from 'web3';
-import { ethers } from 'ethers';
 
 
 export default function Retailer() {
@@ -18,30 +16,15 @@ export default function Retailer() {
     stock: string;
   }
 
-  const [contractAddresses, setContractAddresses] = useState<string[]>();
-  const [contractSelected, setContractSelected] = useState<string>('');
   const [rows, setRows] = useState<Row[]>(new Array<Row>(3).fill({ contract: '', tokenId: '', amount: '', stock: '' }));
   const [isCalling, setIsCalling] = useState(false);
-  const [clientContract, setClientContract] = useState<SmartContract>();
-  const [retailer, setRetailer] = useState<string>();
   const [invoiceHash, setInvoiceHash] = useState<string>();
   const [passwordHash, setPasswordHash] = useState<string>();
 
 
   const sdk = useSDK();
   const connected = sdk?.wallet.isConnected();
-  const address = useAddress();
-  const masterAddr: string = import.meta.env.VITE_MASTER_ADDR;
-  const { contract: masterContract } = useContract(masterAddr);
-  const { data: createdEv } = useContractEvents(masterContract, "ClientContractCreated");
-  const { data: mintedTokensEv } = useContractEvents(clientContract, "MintedTokens");
-
   const web3 = new Web3();
-
-
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    setContractSelected(event.target.value);
-  };
 
   function handleContractChange(e: ChangeEvent, index: number) {
     var result = rows.map((r, i) => {
@@ -59,7 +42,6 @@ export default function Retailer() {
     setRows(result);
   }
 
-
   function handleAmountChange(e: ChangeEvent, index: number) {
     var result = rows.map((r, i) => {
       if (i == index) return { ...r, amount: (e.target as HTMLInputElement).value };
@@ -67,7 +49,6 @@ export default function Retailer() {
     })
     setRows(result);
   }
-
 
   function handlePasswordChange(e: ChangeEvent) {
 
@@ -78,8 +59,6 @@ export default function Retailer() {
       setPasswordHash('');
     }
   }
-
-
 
   async function call() {
 
@@ -96,25 +75,24 @@ export default function Retailer() {
       ca.set(r.contract, [...prev_amounts, r.amount]);
     })
 
-    console.log("invoice hash", invoiceHash);
-    console.log("password hash", passwordHash);
+    // console.log("invoice hash", invoiceHash);
+    // console.log("password hash", passwordHash);
+    const hash = web3.utils.soliditySha3({ type: "bytes", value: invoiceHash }, { type: "bytes", value: passwordHash });
 
-
-    // try {
-    //   setIsCalling(true);
-
-    //   for (let i = 0; i < contracts.length; i++) {
-    //     const clientContract = await sdk?.getContract(contracts[i].trim(), abi);
-    //     const data = await clientContract!.call("tokensToNftsPending", [hash, ct.get(contracts[i]), ca.get(contracts[i])]);
-    //     console.log("NFTs sent to Holder", data);
-    //   }
-    //   toast.success("Success. NFTs available to be claimed");
-    // } catch (err) {
-    //   console.error("Contract call failure", err);
-    //   toast.error("An error has occured\nCheck console log");
-    // } finally {
-    //   setIsCalling(false);
-    // }
+    try {
+      setIsCalling(true);
+      for (let i = 0; i < contracts.length; i++) {
+        const clientContract = await sdk?.getContract(contracts[i].trim(), abi);
+        const data = await clientContract!.call("tokensToNftsPending", [hash, ct.get(contracts[i]), ca.get(contracts[i])]);
+        console.log("NFTs sent to Holder", data);
+      }
+      toast.success("Success. NFTs available to be claimed");
+    } catch (err) {
+      console.error("Contract call failure", err);
+      toast.error("An error has occured\nCheck console log");
+    } finally {
+      setIsCalling(false);
+    }
   }
 
 
@@ -122,7 +100,6 @@ export default function Retailer() {
 
     <Grid container direction="column" justifyContent="center" alignItems="center"
       component={Paper} p={3} spacing={4} width="100%">
-
 
       <Grid item>
         <TableContainer>
@@ -139,7 +116,6 @@ export default function Retailer() {
               {rows.map((row: Row, index: number) => {
                 return (
                   <TableRow key={index}>
-
                     <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
                       <TextField value={row.contract} sx={{ width: "100%" }} onChange={(e) => handleContractChange(e, index)} /></TableCell>
                     <TableCell align="left" sx={{ p: 0, borderBottom: 0, bgcolor: "#181818" }}>
@@ -178,6 +154,5 @@ export default function Retailer() {
       </Grid>
 
     </Grid>
-
   )
 }
