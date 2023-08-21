@@ -3,12 +3,12 @@ import { ChangeEvent, useState } from 'react';
 import Web3 from 'web3';
 
 type FileUpoloaderProps = {
-  setInvoiceHash: Function;
+  setInvoice: Function;
 }
 
 export default function FileUploader(props: FileUpoloaderProps) {
 
-  const { setInvoiceHash } = props
+  const { setInvoice } = props
 
   const [file, setFile] = useState<File>();
 
@@ -25,8 +25,8 @@ export default function FileUploader(props: FileUpoloaderProps) {
       reader.readAsText(files[0]);
 
       reader.onloadend = function () {
-        const invoiceHash = Web3.utils.soliditySha3({ type: "string", value: reader.result as string });
-        setInvoiceHash(invoiceHash);
+        
+        setInvoice(reader.result as string);
       }
     }
   };

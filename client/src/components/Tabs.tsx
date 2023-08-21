@@ -41,7 +41,7 @@ function a11yProps(index: number) {
 }
 
 export default function BasicTabs() {
-  const [value, setValue] = React.useState(0);
+  const [value, setValue] = React.useState(2);
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -56,7 +56,7 @@ export default function BasicTabs() {
           <Tab label="Final Consumer" {...a11yProps(2)} />
         </Tabs>
       </Box>
-      <CustomTabPanel value={value} index={0}>        
+      <CustomTabPanel value={value} index={0}>
         <Manufacturer />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>

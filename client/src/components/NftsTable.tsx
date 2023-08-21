@@ -28,11 +28,10 @@ interface NftsTableProps {
   nfts: NftType[] | undefined;
 }
 
+
 export default function NftsTable(props: NftsTableProps) {
 
   const { nfts } = props;
-
-
 
   return (
     <TableContainer component={Paper} >
@@ -40,28 +39,32 @@ export default function NftsTable(props: NftsTableProps) {
         <TableHead>
           <TableRow>
 
-              <Fragment>
-                <TableCell align="left">Media</TableCell>
-                <TableCell align="left">URI</TableCell>
-                <TableCell align="right"></TableCell>
-              </Fragment>
+            <Fragment>
+              <TableCell align="left">Media</TableCell>
+              <TableCell align="left">URI</TableCell>
+              <TableCell align="right"></TableCell>
+            </Fragment>
 
           </TableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {nfts?.map((nft) => (
             <TableRow
-              key={row.id}
+              key={nft.seller + nft.id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
 
-                <Fragment>
-                  <TableCell align='left'><Typography color='grey'> NFT MEDIA
-                    {/* <NFT clientAddress="0x123456789" id="4294967296" /> */}
-                    </Typography></TableCell>
-                  <TableCell align='left'><Typography color='grey'><Link href="www.nike.com/nfts/shoes/{4294967296}.json">www.nike.com/nfts/shoes/&#123;4294967296&#125;.json</Link></Typography></TableCell>
-                  <TableCell align="right">Revert</TableCell>
-                </Fragment>
+              <Fragment>
+                <TableCell align='left'>
+                  <NFT clientAddress={nft.seller} id={nft.id} />
+                </TableCell>
+                <TableCell align='left'>
+                  <Typography color='grey'>
+                    {/* <Link href={nft.uri?.replace("{id}", nft.id)}>{nft.uri?.replace("{id}", nft.id)}</Link> */}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">Revert</TableCell>
+              </Fragment>
 
             </TableRow>
           ))}

@@ -1,74 +1,110 @@
 import { Button, CircularProgress, Divider, Stack, TextField } from '@mui/material';
-import { useContract, useContractEvents, useContractWrite, useAddress, useSDK } from "@thirdweb-dev/react";
+import { useContract, useContractEvents, useContractWrite, useAddress, useSDK, useWallet } from "@thirdweb-dev/react";
 import { ChangeEvent, Fragment, useEffect, useState } from 'react';
 import Web3 from 'web3';
 import FileUploader from '../components/FileUploader';
 import NftsTable from '../components/NftsTable';
+import { BigNumber, ethers } from 'ethers'
 
+import { GelatoRelay } from "@gelatonetwork/relay-sdk";
 import toast from "react-hot-toast";
 
 export type NftType = {
   seller: string;
   owner: string;
   uri: string;
-  id: string;
-  timestamp: string;
+  id: BigNumber;
+  timestamp?: string;
 }
 
 export default function FinalConsumer() {
 
 
-  const holderAddr: string = import.meta.env.VITE_MASTER_ADDR;
-  const { contract } = useContract(holderAddr);
-  const { mutateAsync: claimNFTs, isLoading: isWriting } = useContractWrite(contract, "claimNFTs");
-  const { data: nftsRedeemedEvents } = useContractEvents(contract, "NftsRedeemed");
+  const holderAddr: string = import.meta.env.VITE_HOLDER_ADDR;
+  const { contract: holder } = useContract(holderAddr);
+  const { mutateAsync: claimNFTs, isLoading: isWriting } = useContractWrite(holder, "claimNFTs");
+  const { data: nftsRedeemedEvents } = useContractEvents(holder, "NftsRedeemed");  
+  const   wallet = useWallet();
 
-  const [invoiceHash, setInvoiceHash] = useState<string>();
-  const [passwordHash, setPasswordHash] = useState<string>();
+  const relay = new GelatoRelay();
+  const apiKey = import.meta.env.VITE_GELATO_API_KEY;
+
+  const [invoice, setInvoice] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [nfts, setNfts] = useState<NftType[]>();
 
   const sdk = useSDK();
   const connected = sdk?.wallet.isConnected();
   const address = useAddress();
 
+
   function handlePasswordChange(e: ChangeEvent) {
-    if ((e.target as HTMLInputElement).value) {
-      const pwdHash = Web3.utils.soliditySha3({ type: "string", value: (e.target as HTMLInputElement).value })
-      setPasswordHash(pwdHash);
-    } else {
-      setPasswordHash('');
-    }
+
+    setPassword((e.target as HTMLInputElement).value);
   }
 
-  useEffect(()=> {
-    
+  useEffect(() => {
+
     let _nfts: NftType[] = [];
 
-    nftsRedeemedEvents?.filter((e) => e.data.owner == address).map((e, i) => {
-      let nft: NftType = {
-        seller: e.data.seller,
-        owner: e.data.owner,
-        uri: e.data.uri,
-        id: e.data.id,
-        timestamp: e.data.timestamp
-      }
-      _nfts.push(nft);
-    })
-    setNfts(_nfts);
-  })
+    console.log("nftsRedeemedEvents:", nftsRedeemedEvents)
+    console.log("address", address)
+    
+    nftsRedeemedEvents?.map((e, i) => {
+      
+      (e.data._nfts as NftType[]).filter((e) => e.owner == address).map((e) => {
+        
+        console.log("id", e.id)
 
-  
+        let nft: NftType = {
+          seller: e.seller,
+          owner: e.owner,
+          uri: e.uri,
+          id: e.id,
+          // timestamp: e.data._timestamp
+        }
+        console.log("NFT", nft)
+        _nfts.push(nft);
+      })
+    })
+    _nfts.length > 0 && setNfts(_nfts);
+    
+  }, [nftsRedeemedEvents])
+
 
   async function call() {
 
+    const web3 = new Web3();
+    const invoiceHash = web3.utils.soliditySha3({ type: "string", value: invoice });
+    const passwordHash = web3.utils.soliditySha3({ type: "string", value: password });    
+
     try {
-      const data = await claimNFTs({ args: [invoiceHash, passwordHash] });
-      console.log("NFTs successfully redeemed", data);
-      toast.success("Success. NFTs available to be claimed");
-    } catch (err) {
-      console.error("Contract call failure", err);
-      toast.error("An error has occured\nCheck console log");
+      const data = holder?.encoder.encode('claimNFTs', [invoiceHash as string, passwordHash as string]);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+
+      // Populate a relay request
+      const request = {
+        chainId: 59140 as any,
+        target: holderAddr,
+        data: data as string,
+        user: address as string,
+      };
+
+      const relayResponse = await relay.sponsoredCallERC2771(request, provider as any, apiKey);
+      console.log("Response", relayResponse);
+
+    } catch (e) {
+      console.log(e);
     }
+
+    // try {
+    //   const data = await claimNFTs({ args: [invoiceHash, passwordHash] });
+    //   console.log("NFTs successfully redeemed", data);
+    //   toast.success("Success. NFTs available to be claimed");
+    // } catch (err) {
+    //   console.error("Contract call failure", err);
+    //   toast.error("An error has occured\nCheck console log");
+    // }
   }
 
   return (
@@ -89,16 +125,16 @@ export default function FinalConsumer() {
           justifyContent="center"
           alignItems="center"
           spacing={2}>
-          <FileUploader setInvoiceHash={setInvoiceHash} />
-          <TextField label="Password" onChange={(event) => handlePasswordChange(event)} size="small" type="password" sx={{ width: '15ch' }} />
+          <FileUploader setInvoice={setInvoice} />
+          <TextField label="Password" value={password} onChange={(event) => handlePasswordChange(event)} size="small" type="password" sx={{ width: '15ch' }} />
 
           <Button
             onClick={() => call()}
-            disabled={!connected || isWriting || !invoiceHash || !passwordHash}
+            disabled={!connected || isWriting || !invoice || !password}
             variant="contained"
             color="primary"
-            sx={{ width: "15ch", minHeight: "45px", maxHeight: "45px" }}>
-            {!connected ? "Disconnected" : isWriting ? <CircularProgress size="1rem" color="inherit" /> : "Send NFT"}
+            sx={{ width: "20ch", minHeight: "45px", maxHeight: "45px" }}>
+            {!connected ? "Disconnected" : isWriting ? <CircularProgress size="1rem" color="inherit" /> : "Claim NFTs"}
           </Button>
         </Stack>
 

@@ -30,8 +30,8 @@ const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={darkTheme}>      
-      <CssBaseline />      
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       <Toaster
         position="top-right"
         reverseOrder={true}
@@ -43,5 +43,5 @@ root.render(
         <App />
       </ThirdwebProvider>
     </ThemeProvider>
-  // </React.StrictMode>
+  </React.StrictMode>
 );

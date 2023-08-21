@@ -11,9 +11,11 @@
   "dependencies": {
     "@emotion/react": "latest",
     "@emotion/styled": "latest",
+    "@gelatonetwork/relay-sdk": "^5.0.0",
     "@mui/icons-material": "latest",
     "@mui/material": "latest",
     "@mui/x-data-grid": "^6.11.1",
+    "@thirdweb-dev/chains": "^0.1.46",
     "@thirdweb-dev/react": "^3",
     "@thirdweb-dev/sdk": "^3",
     "axios": "^1.4.0",
@@ -22,7 +24,8 @@
     "react": "^18.2",
     "react-dom": "^18.2",
     "react-hot-toast": "^2.4.1",
-    "web3": "^4.1.0"
+    "web3": "^4.1.0",
+    "web3-eth-abi": "^4.1.0"
   },
   "devDependencies": {
     "@types/keccak": "^3.0.1",
