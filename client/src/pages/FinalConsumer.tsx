@@ -1,20 +1,20 @@
 import { Button, CircularProgress, Divider, Stack, TextField } from '@mui/material';
-import { useContract, useContractEvents, useContractWrite, useAddress, useSDK, useWallet } from "@thirdweb-dev/react";
+import { useAddress, useContract, useContractEvents, useContractWrite, useSDK, useWallet } from "@thirdweb-dev/react";
+import { BigNumber, ethers } from 'ethers';
 import { ChangeEvent, Fragment, useEffect, useState } from 'react';
 import Web3 from 'web3';
 import FileUploader from '../components/FileUploader';
 import NftsTable from '../components/NftsTable';
-import { BigNumber, ethers } from 'ethers'
 
 import { GelatoRelay } from "@gelatonetwork/relay-sdk";
-import toast from "react-hot-toast";
+import toast from 'react-hot-toast';
 
 export type NftType = {
   seller: string;
   owner: string;
   uri: string;
-  id: BigNumber;
-  timestamp?: string;
+  id: number;
+  timestamp: number;
 }
 
 export default function FinalConsumer() {
@@ -46,24 +46,21 @@ export default function FinalConsumer() {
   useEffect(() => {
 
     let _nfts: NftType[] = [];
-
-    console.log("nftsRedeemedEvents:", nftsRedeemedEvents)
-    console.log("address", address)
     
     nftsRedeemedEvents?.map((e, i) => {
+
+      const timestamp = (e.data._timestamp as unknown as BigNumber).toNumber();
       
-      (e.data._nfts as NftType[]).filter((e) => e.owner == address).map((e) => {
-        
-        console.log("id", e.id)
+      (e.data._nfts as NftType[]).filter((e) => e.owner == address ).map((e) => {
 
         let nft: NftType = {
           seller: e.seller,
           owner: e.owner,
           uri: e.uri,
-          id: e.id,
-          // timestamp: e.data._timestamp
+          id: (e.id as unknown as BigNumber).toNumber(),
+          timestamp: timestamp
         }
-        console.log("NFT", nft)
+        
         _nfts.push(nft);
       })
     })
@@ -91,20 +88,15 @@ export default function FinalConsumer() {
       };
 
       const relayResponse = await relay.sponsoredCallERC2771(request, provider as any, apiKey);
-      console.log("Response", relayResponse);
+      console.log("NFTs successfuly withdrawn", relayResponse);
+      toast.success("NFTs successfuly withdrawn");
+
 
     } catch (e) {
+      console.error("Contract call failure", e);
+      toast.error("An error has occured\nCheck console log");
       console.log(e);
     }
-
-    // try {
-    //   const data = await claimNFTs({ args: [invoiceHash, passwordHash] });
-    //   console.log("NFTs successfully redeemed", data);
-    //   toast.success("Success. NFTs available to be claimed");
-    // } catch (err) {
-    //   console.error("Contract call failure", err);
-    //   toast.error("An error has occured\nCheck console log");
-    // }
   }
 
   return (

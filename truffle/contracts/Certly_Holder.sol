@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import { ERC2771Context } from "@gelatonetwork/relay-context/contracts/vendor/ERC2771Context.sol";
 import "./interfaces/ICertly_Client.sol";
 
-
 contract Certly_Holder is ERC1155Holder, ERC2771Context {
     
     address owner;
@@ -71,6 +70,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
                 nft.seller = address(client);
                 nft.owner = _msgSender();
                 nft.id = nftsIds[j];
+                nft.uri = client.uri(0);
                 _nfts[_msgSender()].push(nft);
             }
 

@@ -1,0 +1,84 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"name": "getMintPrice",
+				"outputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "receiveFee",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_prevUri",
+						"type": "string"
+					},
+					{
+						"internalType": "string",
+						"name": "_newUri",
+						"type": "string"
+					}
+				],
+				"name": "updateUri",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/interfaces/ICertly_Master.sol": "ICertly_Master"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/interfaces/ICertly_Master.sol": {
+			"keccak256": "0xac2f6901da01e6d81380d5eebe5b3568f68b6b4cce45acd5d80a506f5e021135",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://cf4bf49b462f0df5918dc7738adf95e9df972564785435818613ca1ebd6d7139",
+				"dweb:/ipfs/QmPwnPZtEuH6Ts1UQv2sDFFLLWoEwTupFvZDhnGMoJ5Kfe"
+			]
+		}
+	},
+	"version": 1
+}

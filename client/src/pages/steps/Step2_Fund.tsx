@@ -1,6 +1,5 @@
 import { Button, CircularProgress, InputAdornment, OutlinedInput, Paper, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
 import { Fragment } from 'react';
-
 import { useAddress, useContract, useContractEvents, useSDK } from "@thirdweb-dev/react";
 import { BigNumber } from 'ethers';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
@@ -98,8 +97,7 @@ export default function Step2_Fund() {
 
   return (
     <Fragment>
-
-
+      
       <TableContainer component={Paper} sx={{ width: '100%' }}>
         <Table>
           <TableHead>
@@ -149,9 +147,6 @@ export default function Step2_Fund() {
               )
             }
             )}
-
-
-
           </TableBody>
         </Table>
       </TableContainer>

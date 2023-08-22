@@ -1,12 +1,10 @@
-import { Button, CircularProgress, Grid, Box, Paper, SelectChangeEvent, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
-import { SmartContract, useAddress, useContract, useContractEvents, useSDK } from '@thirdweb-dev/react';
+import { Button, CircularProgress, Grid, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField } from '@mui/material';
+import { useSDK } from '@thirdweb-dev/react';
 import { ChangeEvent, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ContractMissingDeployDataError, Web3 } from 'web3';
-import { BigNumber } from 'ethers';
+import { Web3 } from 'web3';
 import { abi } from '../components/ClientContractAbi';
 import FileUploader from '../components/FileUploader';
-import { ethers } from 'ethers'
 
 
 export default function Retailer() {

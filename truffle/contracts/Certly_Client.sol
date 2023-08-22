@@ -127,14 +127,14 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         );
     }
 
-    function tokensToNftsPending(bytes32 _invoice_and_password_hash, uint[] memory _tokensIds) external {
+    function tokensToNftsPending(bytes32 invoice_and_password_hash, uint256[] memory tokensIds) external {
         
-        uint[] memory nftsIds;
-        for (uint i = 0; i < _tokensIds.length; i++) {
+        uint[] memory nftsIds = new uint[](tokensIds.length);
+        for (uint i = 0; i < tokensIds.length; i++) {
             nftsIds[i] = nftCount++;
         }
-        tokensToNfts(address(holder), _tokensIds, nftsIds);
-        holder.registerPendingNfts(_invoice_and_password_hash, nftsIds);
+        tokensToNfts(address(holder), tokensIds, nftsIds);
+        holder.registerPendingNfts(invoice_and_password_hash, nftsIds);
     }
     
     function requestNfts(address _to, uint[] memory _ids) external onlyHolder {

@@ -1,0 +1,64 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "_to",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256[]",
+						"name": "_ids",
+						"type": "uint256[]"
+					}
+				],
+				"name": "requestNfts",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/interfaces/ICertly_Client.sol": "ICertly_Client"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/interfaces/ICertly_Client.sol": {
+			"keccak256": "0x7b606c3b64e1ef9990d1f58fda304dbcef772d670e311de07f0c00925d9a3680",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://1510ab7fab97002616a4b3415d2394b0b94206c8a51106097643cb81b9e8a891",
+				"dweb:/ipfs/QmWu1D1BEppoyFZ74AGQgDWbTsNYcHFDocAZe5FemdSJdA"
+			]
+		}
+	},
+	"version": 1
+}

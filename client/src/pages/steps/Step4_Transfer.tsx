@@ -2,8 +2,8 @@ import { Box, Button, CircularProgress, FormControl, Grid, InputLabel, Paper, Se
 import MenuItem from '@mui/material/MenuItem';
 import { SmartContract, useAddress, useContract, useContractEvents, useSDK } from '@thirdweb-dev/react';
 import { ChangeEvent, useCallback, useEffect, useState } from 'react';
-import { abi } from '../../components/ClientContractAbi';
 import toast from 'react-hot-toast';
+import { abi } from '../../components/ClientContractAbi';
 
 
 export default function Step4_Transfer() {

@@ -1,6 +1,7 @@
 {
   "title": "CertlyNFT unique token",
   "type": "object",
+  "image": "https://cdn.pixabay.com/photo/2014/02/03/16/51/football-257489_640.png",
   "properties": {
       "name": {
           "type": "string",

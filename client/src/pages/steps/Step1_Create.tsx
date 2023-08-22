@@ -4,8 +4,6 @@ import { useState } from 'react';
 
 import toast from "react-hot-toast";
 
-
-
 export default function Step1_CreateContract() {
 
   const masterAddr: string = import.meta.env.VITE_MASTER_ADDR;

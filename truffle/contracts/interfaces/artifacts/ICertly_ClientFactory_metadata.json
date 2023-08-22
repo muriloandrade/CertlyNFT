@@ -1,0 +1,70 @@
+{
+	"compiler": {
+		"version": "0.8.19+commit.7dd6d404"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_uri",
+						"type": "string"
+					},
+					{
+						"internalType": "address",
+						"name": "_owner",
+						"type": "address"
+					}
+				],
+				"name": "createNewClient",
+				"outputs": [
+					{
+						"internalType": "address",
+						"name": "",
+						"type": "address"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"contracts/interfaces/ICertly_ClientFactory.sol": "ICertly_ClientFactory"
+		},
+		"evmVersion": "paris",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"contracts/interfaces/ICertly_ClientFactory.sol": {
+			"keccak256": "0x6b3e0172cae254fc79673555897f1a2dbe7fcc6da87c1dfd5dc122bb2e0f6dab",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://163a03ae9d6825606abc73e1a0636175663a7eb8eb4814dd2631a3a50a0102ef",
+				"dweb:/ipfs/QmVDcZ9K5oDjtYanYMgqgHYgXkbf9XwwexZNorMF3XKeJE"
+			]
+		}
+	},
+	"version": 1
+}
