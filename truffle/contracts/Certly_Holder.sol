@@ -59,7 +59,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
     function claimNFTs(bytes32 _invoiceHash, bytes32 _password) external {
         bytes32 hash_ = keccak256(abi.encodePacked(_invoiceHash, _password));
         PendingNFTs storage hashPendingNFTs = hashesNFTs[hash_];
-        require(hashPendingNFTs.validHash != false, "Hld: Invalid invoice hash or password");  
+        require(hashPendingNFTs.validHash != false, "Hld: Invalid invoice hash or password.");  
         
         for(uint i = 0; i < hashPendingNFTs.clients.length; i++) {
             ICertly_Client client = ICertly_Client(hashPendingNFTs.clients[i]);

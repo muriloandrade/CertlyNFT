@@ -47,6 +47,14 @@ contract Certly_Master is Ownable {
 
     receive() external payable onlyOwner {}
 
+    function setClientFactory(address _clientFactoryAddr) external onlyOwner {
+        clientFactory = ICertly_ClientFactory(_clientFactoryAddr);
+    }
+
+    function setHolder(address _holderAddr) external onlyOwner {
+        holder = ICertly_Holder(_holderAddr);
+    }
+
     function receiveFee() payable external onlyAllowed {}
     
     function withdraw(address payable _to, uint _value) external onlyOwner {
@@ -74,7 +82,8 @@ contract Certly_Master is Ownable {
     function createContract(string calldata _uri) external {
         require(validateUri(_uri));
         clients[msg.sender].allowed = true;
-        address newClientAddr = clientFactory.createNewClient(_uri, msg.sender);
+        string memory baseURI = _uri[:strlen(_uri) - 9];
+        address newClientAddr = clientFactory.createNewClient(_uri, baseURI, msg.sender);
         Client storage client = clients[msg.sender];
         client.contracts[client.contractsCount] = newClientAddr;
         activeContracts[newClientAddr] = true;

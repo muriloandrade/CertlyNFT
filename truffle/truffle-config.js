@@ -85,6 +85,18 @@ module.exports = {
       },
       network_id: "59140",
     },  
+    matic: {
+      provider: () => {
+        return new HDWalletProvider(
+          MNEMONIC,
+          `https://rpc-mumbai.maticvigil.com/v1/f0f9e5167118b6f086bf3cde0276bf4333e1a981`,
+        );
+      },
+      network_id: "80001",
+      confirmations: 2,
+      timeoutBlocks: 200,
+      skipDryRun: true
+    },  
     //
     // An additional network, but with some advanced options…
     // advanced: {
@@ -124,13 +136,13 @@ module.exports = {
     solc: {
       version: "0.8.19",      // Fetch exact version from solc-bin (default: truffle's version)
       // docker: true,        // Use "0.5.1" you've installed locally with docker (default: false)
-      // settings: {          // See the solidity docs for advice about optimization and evmVersion
-      //  optimizer: {
-      //    enabled: true,
-      //    runs: 1
-      //  },
+      settings: {          // See the solidity docs for advice about optimization and evmVersion
+       optimizer: {
+         enabled: true,
+         runs: 200
+       },
       //  evmVersion: "byzantium"
-      // }
+      }
     }
   },
 
@@ -157,7 +169,7 @@ module.exports = {
   
   plugins: [
     'truffle-contract-size',
-    'truffle-plugin-verify'
+    'truffle-plugin-verify',
   ]
 };
   

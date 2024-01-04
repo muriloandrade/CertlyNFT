@@ -15,12 +15,12 @@ contract Certly_ClientFactory {
         holder = _holder;
     }
 
-    function createNewClient(string memory _uri, address _owner)
+    function createNewClient(string memory _uri, string memory _baseURI, address _owner)
         external
         returns (address)
     {
         require(msg.sender == master, "Fct: Only master");
-        Certly_Client newClient = new Certly_Client(master, holder, _uri, _owner);
+        Certly_Client newClient = new Certly_Client(master, holder, _uri, _baseURI, _owner);
         return address(newClient);
     }
 

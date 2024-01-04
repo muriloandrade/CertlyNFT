@@ -14,6 +14,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     ICertly_Holder holder;
     address masterAddr;
     uint accountBalance;
+    string private baseURI;
 
     //Token IDs: from 0 to (2^32)-1
     uint public constant MAX_TOKEN_ID = (2 ** 32) - 1;
@@ -43,15 +44,20 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         _;
     }
 
-    constructor(address _masterAddr, address _holderAddr, string memory _uri, address _client) ERC1155(_uri) {
+    constructor(address _masterAddr, address _holderAddr, string memory _uri, string memory _baseURI, address _client) ERC1155(_uri) {
         master = ICertly_Master(_masterAddr);
         holder = ICertly_Holder(_holderAddr);
         masterAddr = _masterAddr;
+        baseURI = _baseURI;
         _transferOwnership(_client);
     }
 
     receive() external payable onlyOwner {
         accountBalance += msg.value;
+    }
+    
+    function uri(uint256 id) public view virtual override returns (string memory) {
+        return string.concat(baseURI, toString(id), ".json");
     }
 
     function withdraw(address payable _to, uint _value) external onlyOwner {
@@ -174,5 +180,31 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    /**
+     * By thirdweb - https://github.com/thirdweb-dev/contracts/blob/main/contracts/lib/Strings.sol
+     * @dev Converts a `uint256` to its ASCII `string` decimal representation.
+     */
+    function toString(uint256 value) internal pure returns (string memory) {
+        // Inspired by OraclizeAPI's implementation - MIT licence
+        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
+
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
     }
 }

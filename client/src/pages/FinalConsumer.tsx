@@ -81,7 +81,7 @@ export default function FinalConsumer() {
 
       // Populate a relay request
       const request = {
-        chainId: 59140 as any,
+        chainId: 80001 as any,
         target: holderAddr,
         data: data as string,
         user: address as string,

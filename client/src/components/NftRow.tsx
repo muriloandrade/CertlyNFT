@@ -29,6 +29,7 @@ export default function NftRow(props: NftRowProps) {
   }, [nft]);
 
 
+
   // https://johnumarattil.medium.com/truncating-middle-portion-of-a-string-in-javascript-173bfe1f9ae3
   function truncateString(str: string, firstCharCount = str?.length, endCharCount = 0, dotCount = 3) {
     if (str.length <= firstCharCount + endCharCount) {
