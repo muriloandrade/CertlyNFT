@@ -32,7 +32,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
     //Trusted Forwarder: GelatoRelay1BalanceERC2771.sol
     constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {
         owner = msg.sender;
-    }    
+    }
 
     function setMaster(address payable _master) external {
         require(msg.sender == owner, "Hld: Only owner");

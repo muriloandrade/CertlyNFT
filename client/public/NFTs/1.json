@@ -1,0 +1,18 @@
+{
+  "title": "Fender Guitar",
+  "type": "object",
+  "properties": {
+      "name": {
+          "type": "string",
+          "description": "This NFT represents a Fender guitar"
+      },
+      "description": {
+          "type": "string",
+          "description": "The inspiring sound of a Stratocaster is one of the foundations of Fender. Featuring this classic sound—bell-like high end, punchy mids and robust low end, combined with crystal-clear articulation—the Player Stratocaster is packed with authentic Fender feel and style. It’s ready to serve your musical vision, it’s versatile enough to handle any style of music and it’s the perfect platform for creating your own sound."
+      },
+      "image": {
+          "type": "string",
+          "description": "https://cdn.pixabay.com/photo/2017/11/07/00/18/guitar-2925274_640.jpg"
+      }
+  }
+}

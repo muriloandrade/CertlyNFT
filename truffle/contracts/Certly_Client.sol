@@ -7,23 +7,28 @@ import "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ICertly_Master.sol";
 import "./interfaces/ICertly_Holder.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 
 contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
+    using Strings for uint256;
+
     ICertly_Master master;
     ICertly_Holder holder;
     address masterAddr;
     uint accountBalance;
     string private baseURI;
 
-    //Token IDs: from 0 to (2^32)-1
+    //Token IDs: from 1 to (2^32)-1
+    //Tokein ID = 0 cannot be used, because mapping 'nftsSourceTokens' are initialized with zeros
+    uint public constant MIN_TOKEN_ID = 1;
     uint public constant MAX_TOKEN_ID = (2 ** 32) - 1;
 
     //NFT IDs: from (2^32) onward
     uint public constant MIN_NFT_ID = 2 ** 32;
     uint nftCount = MIN_NFT_ID;
 
-    mapping(uint => uint) nftsPreviousTokens;
+    mapping(uint => uint) nftsSourceTokens;
     mapping(uint => address) nftsPreviousOwners;
     mapping(uint => uint) nftsConversionsTimestamps;
     uint public timeToRevertNft = 1 days;
@@ -56,8 +61,11 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         accountBalance += msg.value;
     }
     
+    // Returns the URI for the specific token id (mapped by NFT id). Ex: https://manufacturer-domain.com/products/123.json
+    // No need leading zeroes and hexa format (described in EIP-1155), because tokens are limited by MAX_TOKEN_ID (4294967295)
     function uri(uint256 id) public view virtual override returns (string memory) {
-        return string.concat(baseURI, toString(id), ".json");
+        require(totalSupply(id) > 0, "Token/NFT not minted");
+        return string(abi.encodePacked(baseURI, nftsSourceTokens[id].toString(), ".json" ));
     }
 
     function withdraw(address payable _to, uint _value) external onlyOwner {
@@ -91,7 +99,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
 
         bool ids_range_ok = true;
         for (uint i = 0; i < ids.length; i++) {
-            ids_range_ok = ids[i] <= MAX_TOKEN_ID;
+            ids_range_ok = ids[i] >= MIN_TOKEN_ID && ids[i] <= MAX_TOKEN_ID;
         }
         require(ids_range_ok, "Clt: Passed Id(s) out of range");
 
@@ -105,11 +113,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         bool tokensIdsOk = true;
         bool nftsIdsOk = true;
         for (uint i = 0; i < _tokensIds.length && tokensIdsOk && nftsIdsOk; i++) {
-            tokensIdsOk = _tokensIds[i] <= MAX_TOKEN_ID;
-            // nftsIdsOk =  _nftsIds[i] >= MIN_NFT_ID
-            //             && !(nftsIdsPassed[_toAccount][_nftsIds[i]])
-            //             && totalSupply(_nftsIds[i]) == 0;
-            // nftsIdsPassed[_toAccount][_nftsIds[i]] = true;
+            tokensIdsOk = _tokensIds[i] >= MIN_TOKEN_ID && _tokensIds[i] <= MAX_TOKEN_ID;
         }
         for (uint i; i < _nftsIds.length; i++) nftsIdsPassed[msg.sender][i] = false;
         require(tokensIdsOk && nftsIdsOk, "Clt: Passed Id(s) out of range, non unique or already minted NFT Id" );
@@ -120,7 +124,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         _mintBatch(_toAccount, _nftsIds, _1s, "");
 
         for (uint i = 0; i < _nftsIds.length; i++) {
-            nftsPreviousTokens[_nftsIds[i]] = _tokensIds[i];
+            nftsSourceTokens[_nftsIds[i]] = _tokensIds[i];
             nftsPreviousOwners[_nftsIds[i]] = msg.sender;
             nftsConversionsTimestamps[_nftsIds[i]] = block.timestamp;
         }
@@ -155,10 +159,11 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         burn(_caller, _nftId, 1);
         _mint(
             nftsPreviousOwners[_nftId],
-            nftsPreviousTokens[_nftId],
+            nftsSourceTokens[_nftId],
             1,
             ""
         );
+        nftsSourceTokens[_nftId] = 0;
     }
 
     function payFee(uint _value) private {
@@ -176,35 +181,5 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
         bytes memory data
     ) internal override(ERC1155, ERC1155Supply) {
         super._beforeTokenTransfer(operator, from, to, ids, amounts, data);
-    }
-
-    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155) returns (bool) {
-        return super.supportsInterface(interfaceId);
-    }
-
-    /**
-     * By thirdweb - https://github.com/thirdweb-dev/contracts/blob/main/contracts/lib/Strings.sol
-     * @dev Converts a `uint256` to its ASCII `string` decimal representation.
-     */
-    function toString(uint256 value) internal pure returns (string memory) {
-        // Inspired by OraclizeAPI's implementation - MIT licence
-        // https://github.com/oraclize/ethereum-api/blob/b42146b063c7d6ee1358846c198246239e9360e8/oraclizeAPI_0.4.25.sol
-
-        if (value == 0) {
-            return "0";
-        }
-        uint256 temp = value;
-        uint256 digits;
-        while (temp != 0) {
-            digits++;
-            temp /= 10;
-        }
-        bytes memory buffer = new bytes(digits);
-        while (value != 0) {
-            digits -= 1;
-            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
-            value /= 10;
-        }
-        return string(buffer);
     }
 }

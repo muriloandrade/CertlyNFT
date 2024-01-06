@@ -1,4 +1,4 @@
-import { Button, CircularProgress, Divider, Stack, TextField } from '@mui/material';
+import { Button, CircularProgress, Divider, Stack, TextField, Typography } from '@mui/material';
 import { useAddress, useContract, useContractEvents, useContractWrite, useSDK, useWallet } from "@thirdweb-dev/react";
 import { BigNumber, ethers } from 'ethers';
 import { ChangeEvent, Fragment, useEffect, useState } from 'react';
@@ -129,8 +129,8 @@ export default function FinalConsumer() {
             {!connected ? "Disconnected" : isWriting ? <CircularProgress size="1rem" color="inherit" /> : "Claim NFTs"}
           </Button>
         </Stack>
-
-        <NftsTable nfts={nfts} />
+        {nfts && nfts.length > 0 ? <NftsTable nfts={nfts} /> : <Typography>No NFTs</Typography>}
+        
       </Stack>
     </Fragment>
   )

@@ -1,15 +1,15 @@
 {
-  "title": "CertlyNFT unique token",
+  "title": "Men's Watch",
   "type": "object",
   "image": "https://cdn.pixabay.com/photo/2018/01/18/19/06/time-3091031_640.jpg",
   "properties": {
       "name": {
           "type": "string",
-          "description": "Identifies the asset to which this NFT represents"
+          "description": "This NFT represents a men's watch"
       },
       "description": {
           "type": "string",
-          "description": "Describes the asset to which this NFT represents"
+          "description": "Chronomat GMT Automatic Chronograph Black Dial Men's Watch"
       },
       "image": {
           "type": "string",

@@ -9,6 +9,7 @@
     "@gelatonetwork/relay-sdk": "^5.0.0",
     "@openzeppelin/contracts": "^4.9.3",
     "@thirdweb-dev/chains": "^0.1.43",
+    "@thirdweb-dev/contracts": "^3.11.0",
     "@truffle/hdwallet-provider": "^2.1.7",
     "truffle-contract-size": "^2.0.1"
   },

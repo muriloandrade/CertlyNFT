@@ -1,15 +1,15 @@
 {
-  "title": "CertlyNFT unique token",
+  "title": "Classic Soccer Ball",
   "type": "object",
   "image": "https://cdn.pixabay.com/photo/2014/02/03/16/51/football-257489_640.png",
   "properties": {
       "name": {
           "type": "string",
-          "description": "Identifies the asset to which this NFT represents"
+          "description": "This NFT represents a classic black and white soccer ball"
       },
       "description": {
           "type": "string",
-          "description": "Describes the asset to which this NFT represents"
+          "description": "Classic black and white soccer ball size 5, thicker PU tight weaved."
       },
       "image": {
           "type": "string",
