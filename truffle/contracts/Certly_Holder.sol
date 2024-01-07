@@ -70,7 +70,7 @@ contract Certly_Holder is ERC1155Holder, ERC2771Context {
                 nft.seller = address(client);
                 nft.owner = _msgSender();
                 nft.id = nftsIds[j];
-                nft.uri = client.uri(0);
+                nft.uri = client.uri(nftsIds[j]);
                 _nfts[_msgSender()].push(nft);
             }
 
