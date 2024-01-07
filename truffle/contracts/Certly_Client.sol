@@ -78,7 +78,7 @@ contract Certly_Client is ERC1155Supply, ERC1155Burnable, Ownable {
     }
 
     function updateUri(string memory _newUri) external onlyOwner {
-        master.updateUri(uri(0), _newUri);
+        master.updateUri(baseURI, _newUri);
         _setURI(_newUri);
     }
 
